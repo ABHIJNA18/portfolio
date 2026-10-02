@@ -1,0 +1,76 @@
+---
+import { linkAttrs } from '../utils/links';
+import Section from './Section.astro';
+import { experience } from '../data/experience';
+---
+
+<Section id="work" tone="ember" num="01" title="Experience" intro="Where I've worked and what I shipped there.">
+  <ol class="timeline">
+    {
+      experience.map((job) => (
+        <li class="timeline-item reveal">
+          <p class="when">
+            {job.start} — {job.end}
+          </p>
+          <div>
+            <h3>
+              {job.role} <span class="at">at</span>{' '}
+              {job.url ? (
+                <a class="arrow-link" {...linkAttrs(job.url)}>
+                  {job.company}
+                </a>
+              ) : (
+                job.company
+              )}
+            </h3>
+            {job.location && <p class="where">{job.location}</p>}
+            <ul class="highlights">
+              {job.highlights.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+            <div class="stack">
+              <span class="stack-label">Tech stack</span>
+              <ul class="tags">
+                {job.tech.map((tech) => (
+                  <li class="tag">{tech}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</Section>
+
+<style>
+  .highlights {
+    margin: 12px 0 16px;
+    padding-left: 18px;
+    color: var(--ink-2);
+  }
+
+  .highlights li {
+    margin-bottom: 4px;
+  }
+
+  .highlights li::marker {
+    color: var(--accent);
+  }
+
+  .stack {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+  }
+
+  .stack-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+</style>

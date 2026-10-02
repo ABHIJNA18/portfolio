@@ -1,0 +1,49 @@
+---
+import { linkAttrs } from '../utils/links';
+import Section from './Section.astro';
+import { education } from '../data/education';
+---
+
+<Section id="education" tone="sea" num="03" title="Education" intro="Where I learned the fundamentals.">
+  <ol class="timeline">
+    {
+      education.map((item) => (
+        <li class="timeline-item reveal">
+          <p class="when">
+            {item.start} — {item.end}
+          </p>
+          <div>
+            <h3>{item.degree}</h3>
+            <p class="where">
+              {item.url ? (
+                <a class="arrow-link" {...linkAttrs(item.url)}>
+                  {item.school}
+                </a>
+              ) : (
+                item.school
+              )}
+              {item.location && ` · ${item.location}`}
+            </p>
+            <ul class="details">
+              {item.details.map((detail) => (
+                <li>{detail}</li>
+              ))}
+            </ul>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</Section>
+
+<style>
+  .details {
+    margin: 12px 0 0;
+    padding-left: 18px;
+    color: var(--ink-2);
+  }
+
+  .details li::marker {
+    color: var(--accent);
+  }
+</style>

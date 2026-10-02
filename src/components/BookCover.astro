@@ -1,0 +1,267 @@
+---
+import { Image } from 'astro:assets';
+import { bookColor, type Book } from '../data/books';
+
+interface Props {
+  book: Book;
+  sizes?: string;
+}
+
+const { book, sizes = '160px' } = Astro.props;
+const leaves = [0, 1, 2, 3, 4];
+---
+
+<!--
+  A small 3D book. Hover (or tap on touch screens) tilts it toward you, swings the
+  cover open and riffles the pages underneath. Everything is sized in cqw so the
+  same component works at any width.
+-->
+<button
+  class="book"
+  type="button"
+  style={`--c: ${bookColor(book)}`}
+  aria-label={`Flip through ${book.title}`}
+  aria-pressed="false"
+>
+  <span class="body">
+    <span class="back"></span>
+    <span class="edge"></span>
+    {leaves.map((i) => <span class="leaf" style={`--i: ${i}`} />)}
+    <span class="front">
+      {
+        book.cover ? (
+          <Image src={book.cover} alt="" inferSize widths={[120, 240, 360]} sizes={sizes} loading="lazy" />
+        ) : (
+          <span class="drawn">
+            <span class="drawn-title">{book.title}</span>
+            <span class="drawn-author">{book.author}</span>
+          </span>
+        )
+      }
+    </span>
+  </span>
+</button>
+
+<style>
+  .book {
+    container-type: inline-size;
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    perspective: 900px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Soft floor shadow that grows as the book lifts. */
+  .book::after {
+    content: '';
+    position: absolute;
+    right: 8%;
+    bottom: -4%;
+    left: 8%;
+    height: 6%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(0 0 0 / 0.28), transparent);
+    opacity: 0;
+    transition: opacity 0.6s;
+  }
+
+  .body {
+    position: relative;
+    display: block;
+    aspect-ratio: 2 / 3;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .body > span {
+    position: absolute;
+    display: block;
+  }
+
+  /* Book is 8cqw thick: front cover sits at +4cqw, back cover at -4cqw. */
+  .front {
+    inset: 0;
+    overflow: hidden;
+    border-radius: 2px 5px 5px 2px;
+    background: var(--c);
+    box-shadow: var(--shadow);
+    transform-origin: left center;
+    translate: 0 0 4cqw;
+    transition: rotate 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* Spine crease on the cover's left edge. */
+  .front::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgb(0 0 0 / 0.2) 0 3%, rgb(255 255 255 / 0.14) 3% 4.2%, transparent 4.2%);
+    pointer-events: none;
+  }
+
+  .front :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .back {
+    inset: 0;
+    border-radius: 2px 5px 5px 2px;
+    background: color-mix(in srgb, var(--c) 65%, #000);
+    translate: 0 0 -4cqw;
+  }
+
+  /* The block of page edges on the right side, visible once the book tilts. */
+  .edge {
+    top: 1.5%;
+    right: 0;
+    bottom: 1.5%;
+    width: 7.6cqw;
+    background: repeating-linear-gradient(90deg, #f6f1e6 0 1px, #dcd5c4 1px 2px);
+    transform: translateX(3.8cqw) rotateY(90deg);
+  }
+
+  .leaf {
+    top: 1.5%;
+    right: 1.5%;
+    bottom: 1.5%;
+    left: 0;
+    border-radius: 0 3px 3px 0;
+    /* Faint "lines of text" so each page reads as a page while it flutters. */
+    background:
+      repeating-linear-gradient(180deg, rgb(0 0 0 / 0.09) 0 0.7cqw, transparent 0.7cqw 6.2cqw) 18cqw 14cqw / 64cqw 74% no-repeat,
+      linear-gradient(90deg, #e4ddcd, #f8f4ea 14%, #fffdf7);
+    box-shadow:
+      inset -1px 0 0 rgb(0 0 0 / 0.08),
+      1px 0 4px rgb(0 0 0 / 0.1);
+    transform-origin: left center;
+    translate: 0 0 calc(3.3cqw - var(--i) * 0.7cqw);
+  }
+
+  /* ---------- Open: hover on mouse devices, or tapped (.open) ---------- */
+  @media (hover: hover) {
+    .book:hover .body {
+      transform: rotateY(-16deg) rotateX(5deg) translateY(-3%);
+    }
+
+    .book:hover .front {
+      rotate: y -50deg;
+    }
+
+    .book:hover .leaf {
+      animation: riffle 0.9s ease-in-out infinite;
+      animation-delay: calc(var(--i) * 0.08s);
+    }
+
+    .book:hover::after {
+      opacity: 1;
+    }
+  }
+
+  .book.open .body,
+  .book:focus-visible .body {
+    transform: rotateY(-16deg) rotateX(5deg) translateY(-3%);
+  }
+
+  .book.open .front,
+  .book:focus-visible .front {
+    rotate: y -50deg;
+  }
+
+  .book.open .leaf,
+  .book:focus-visible .leaf {
+    animation: riffle 0.9s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.08s);
+  }
+
+  .book.open::after,
+  .book:focus-visible::after {
+    opacity: 1;
+  }
+
+  .book:focus-visible {
+    outline: none;
+  }
+
+  .book:focus-visible .front {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  /* Each page lifts a little less than the one above it, then falls back. */
+  @keyframes riffle {
+    0%,
+    100% {
+      rotate: y 0deg;
+    }
+    50% {
+      rotate: y calc(-40deg + var(--i) * 6deg);
+    }
+  }
+
+  /* Drawn fallback cover for books without an image. */
+  .drawn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    color: #f5f1e8;
+  }
+
+  .drawn-title {
+    padding: 14cqw 10cqw 0 15cqw;
+    font-family: var(--font-serif);
+    font-size: 15cqw;
+    line-height: 1.08;
+    text-align: left;
+  }
+
+  .drawn-author {
+    padding: 0 10cqw 11cqw 15cqw;
+    font-size: 7cqw;
+    letter-spacing: 0.06em;
+    text-align: left;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  /* Reduced motion: open the book, but fan the pages still instead of riffling. */
+  @media (prefers-reduced-motion: reduce) {
+    .body,
+    .front {
+      transition: none;
+    }
+
+    .book .leaf {
+      animation: none !important;
+    }
+
+    .book.open .leaf,
+    .book:hover .leaf {
+      rotate: y calc(-36deg + var(--i) * 6deg);
+    }
+  }
+</style>
+
+<script>
+  // Touch screens have no hover, so a tap opens the book (and closes any other open one).
+  const books = [...document.querySelectorAll<HTMLButtonElement>('.book')];
+  for (const book of books) {
+    book.addEventListener('click', () => {
+      const open = !book.classList.contains('open');
+      for (const other of books) {
+        other.classList.toggle('open', other === book && open);
+        other.setAttribute('aria-pressed', String(other === book && open));
+      }
+    });
+  }
+</script>

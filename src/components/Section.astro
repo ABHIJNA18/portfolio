@@ -1,0 +1,23 @@
+---
+interface Props {
+  id: string;
+  num: string;
+  title: string;
+  intro?: string;
+  /** Gradient used for the heading — defined in global.css. */
+  tone?: 'ember' | 'violet' | 'sea' | 'sunset' | 'indigo';
+}
+
+const { id, num, title, intro, tone } = Astro.props;
+---
+
+<section id={id} class:list={['block', tone && `tone-${tone}`]}>
+  <div class="container">
+    <header class="section-head reveal">
+      <span class="section-num">{num}</span>
+      <h2 class="section-title">{title}</h2>
+    </header>
+    {intro && <p class="section-intro reveal">{intro}</p>}
+    <slot />
+  </div>
+</section>

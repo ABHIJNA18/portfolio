@@ -1,0 +1,269 @@
+---
+import { linkAttrs } from '../utils/links';
+import { Image } from 'astro:assets';
+import portrait from '../assets/abhijna.jpg';
+import { site } from '../data/site';
+import { books } from '../data/books';
+import { playlists } from '../data/playlists';
+
+const reading = books.find((book) => book.status === 'reading');
+const spinning = playlists[0];
+
+const links = [
+  { label: 'GitHub', href: site.links.github },
+  { label: 'LinkedIn', href: site.links.linkedin },
+  { label: 'Email', href: site.email && `mailto:${site.email}` },
+  { label: 'Resume', href: site.links.resume },
+].filter((link) => link.href);
+---
+
+<section class="hero" id="top">
+  <div class="container hero-grid">
+    <div class="intro">
+      <p class="eyebrow reveal"><span class="dot"></span>{site.role} · {site.location}</p>
+      <h1 class="reveal">Hi, I'm {site.name}.</h1>
+      <p class="headline reveal">{site.headline}</p>
+    </div>
+
+    <figure class="photo reveal">
+      <Image
+        src={portrait}
+        alt={`${site.name} smiling in front of snowy mountains`}
+        widths={[240, 480, 720]}
+        sizes="(max-width: 720px) 200px, 240px"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </figure>
+
+    <div class="more">
+      <div class="bio reveal">
+        {site.bio.map((paragraph) => <p>{paragraph}</p>)}
+      </div>
+      <ul class="links reveal">
+        {links.map((link) => <li><a class="arrow-link" {...linkAttrs(link.href)}>{link.label}</a></li>)}
+      </ul>
+      <div class="now reveal">
+        {
+          reading && (
+            <a class="now-item" href="#books">
+              <span class="now-emoji" aria-hidden="true">📖</span>
+              <span class="now-label">Reading</span>
+              <span>{reading.title}</span>
+            </a>
+          )
+        }
+        {
+          spinning && (
+            <a class="now-item" href="#music">
+              <span class="now-emoji" aria-hidden="true">🎧</span>
+              <span class="now-label">Spinning</span>
+              <span class="mini-record" style={`--c: ${spinning.color}`} />
+              <span>{spinning.name}</span>
+            </a>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding: 88px 0 88px;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 240px;
+    grid-template-areas:
+      'intro photo'
+      'more  photo';
+    column-gap: 48px;
+    align-items: start;
+  }
+
+  .intro {
+    grid-area: intro;
+  }
+
+  .more {
+    grid-area: more;
+  }
+
+  .photo {
+    grid-area: photo;
+    margin: 8px 0 0;
+    padding: 7px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    rotate: 2.5deg;
+    transition: rotate 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .photo:hover {
+    rotate: 0deg;
+  }
+
+  .photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+  }
+
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 22px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 0 var(--accent);
+    animation: pulse 2.4s ease-out infinite;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(52px, 9vw, 80px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .headline {
+    margin: 14px 0 28px;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(24px, 3.6vw, 30px);
+    line-height: 1.2;
+    color: var(--muted);
+  }
+
+  .bio {
+    max-width: 58ch;
+    font-size: 17px;
+    color: var(--ink-2);
+  }
+
+  .bio p {
+    margin: 0 0 14px;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin: 26px 0 0;
+    padding: 0;
+    list-style: none;
+    font-weight: 500;
+  }
+
+  .now {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 44px;
+  }
+
+  .now-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 14px;
+    text-decoration: none;
+    transition:
+      border-color 0.2s,
+      transform 0.2s;
+  }
+
+  .now-item:hover {
+    border-color: var(--muted);
+    transform: translateY(-1px);
+  }
+
+  .now-emoji {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .now-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .mini-record {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, #eee 0 1.5px, var(--c) 2px 5px, transparent 5.5px),
+      repeating-radial-gradient(circle, #151515 0 1px, #2a2a2a 1px 2px);
+    animation: spin 3s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes pulse {
+    70% {
+      box-shadow: 0 0 0 8px transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+
+  /* Phones: photo first, then the intro, then the rest. */
+  @media (max-width: 720px) {
+    .hero {
+      padding-top: 48px;
+    }
+
+    .hero-grid {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'photo'
+        'intro'
+        'more';
+    }
+
+    .photo {
+      width: 200px;
+      margin: 0 0 36px 4px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dot,
+    .mini-record {
+      animation: none;
+    }
+
+    .photo {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,163 @@
+---
+import Section from './Section.astro';
+import BookCover from './BookCover.astro';
+import { books } from '../data/books';
+
+const reading = books.filter((book) => book.status === 'reading');
+const shelves = [
+  { label: "Books I've loved", books: books.filter((book) => book.status === 'loved') },
+  { label: 'Up next', books: books.filter((book) => book.status === 'up-next') },
+].filter((shelf) => shelf.books.length > 0);
+---
+
+<Section id="books" tone="sunset" num="04" title="Bookshelf" intro="What I'm reading now, what I've loved, and what's next on the pile. Hover over a book — or tap it — to flip through the pages.">
+  {
+    reading.length > 0 && (
+      <div class="group">
+        <h3 class="sub">Currently reading</h3>
+        <ul class="reading">
+          {reading.map((book) => (
+            <li class="reading-card reveal">
+              <div class="reading-cover">
+                <BookCover book={book} sizes="96px" />
+              </div>
+              <div>
+                <p class="reading-title">{book.title}</p>
+                <p class="author">{book.author}</p>
+                {book.progress != null && (
+                  <>
+                    <div
+                      class="progress"
+                      role="progressbar"
+                      aria-label={`Progress through ${book.title}`}
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      aria-valuenow={book.progress}
+                    >
+                      <span style={`width: ${book.progress}%`} />
+                    </div>
+                    <p class="progress-label">{book.progress}% through</p>
+                  </>
+                )}
+                {book.note && <p class="note">{book.note}</p>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
+  <div class="shelves">
+    {
+      shelves.map((shelf) => (
+        <div class="group reveal">
+          <h3 class="sub">{shelf.label}</h3>
+          <ul class="covers">
+            {shelf.books.map((book) => (
+              <li>
+                <BookCover book={book} sizes="(max-width: 640px) 45vw, 160px" />
+                <p class="title">{book.title}</p>
+                <p class="author">{book.author}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</Section>
+
+<style>
+  .reading {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .reading-card {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    max-width: 520px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+  }
+
+  .reading-cover {
+    flex: none;
+    width: 96px;
+  }
+
+  .reading-title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
+  .author {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .progress {
+    height: 4px;
+    margin-top: 16px;
+    border-radius: 4px;
+    background: var(--line);
+    overflow: hidden;
+  }
+
+  .progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+  }
+
+  .progress-label {
+    margin: 6px 0 0;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  .note {
+    margin: 12px 0 0;
+    font-size: 14px;
+    color: var(--ink-2);
+  }
+
+  .shelves {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 48px;
+    margin-top: 56px;
+  }
+
+  .covers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .title {
+    margin: 14px 0 0;
+    font-family: var(--font-serif);
+    font-size: 19px;
+    line-height: 1.15;
+  }
+
+  @media (max-width: 640px) {
+    .shelves {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

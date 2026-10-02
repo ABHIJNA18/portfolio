@@ -1,0 +1,94 @@
+---
+import { linkAttrs } from '../utils/links';
+import { site } from '../data/site';
+
+const year = new Date().getFullYear();
+const links = [
+  { label: 'GitHub', href: site.links.github },
+  { label: 'LinkedIn', href: site.links.linkedin },
+  { label: 'Spotify', href: site.links.spotify },
+  { label: 'Resume', href: site.links.resume },
+].filter((link) => link.href);
+---
+
+<footer id="contact" class="contact">
+  <div class="container">
+    <span class="section-num reveal">06</span>
+    <h2 class="gradient-text reveal">Say hi.</h2>
+    <p class="lead reveal">
+      Have a question, an idea, or a book or song recommendation? My inbox is open.
+    </p>
+    {site.email && <a class="email reveal" href={`mailto:${site.email}`}>{site.email}</a>}
+    <ul class="links reveal">
+      {links.map((link) => <li><a class="arrow-link" {...linkAttrs(link.href)}>{link.label}</a></li>)}
+    </ul>
+    <p class="fineprint">
+      <span>© {year} {site.fullName}</span>
+      <span>Built with Astro · Hosted on Vercel</span>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .contact {
+    --g1: #c2410c;
+    --g2: #9c36b5;
+    padding: 96px 0 40px;
+    border-top: 1px solid var(--line);
+  }
+
+  :global([data-theme='dark']) .contact {
+    --g1: #ff8a5c;
+    --g2: #e599f7;
+  }
+
+  h2 {
+    margin: 10px 0 18px;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(56px, 11vw, 96px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .lead {
+    max-width: 46ch;
+    margin: 0 0 22px;
+    color: var(--muted);
+  }
+
+  .email {
+    font-family: var(--font-serif);
+    font-size: clamp(26px, 4.5vw, 36px);
+    text-decoration: underline;
+    text-decoration-color: var(--line);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 6px;
+    transition: color 0.2s, text-decoration-color 0.2s;
+  }
+
+  .email:hover {
+    color: var(--accent);
+    text-decoration-color: currentColor;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+    font-weight: 500;
+  }
+
+  .fineprint {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 24px;
+    margin: 88px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+</style>

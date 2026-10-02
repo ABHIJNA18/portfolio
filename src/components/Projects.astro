@@ -1,0 +1,176 @@
+---
+import { linkAttrs } from '../utils/links';
+import { Image } from 'astro:assets';
+import Section from './Section.astro';
+import { projects } from '../data/projects';
+
+const statusLabel = { live: 'Live', 'in-progress': 'Working on it' };
+---
+
+<Section id="projects" tone="violet" num="02" title="Projects" intro="Things I've built outside of work.">
+  <ul class="grid">
+    {
+      projects.map((project) => (
+        <li class="card reveal">
+          <div class="card-top">
+            <h3>
+              {project.logo ? (
+                <Image class="project-icon" src={project.logo} alt="" inferSize widths={[28, 56, 84]} sizes="28px" />
+              ) : (
+                project.emoji && (
+                  <span class="project-emoji" aria-hidden="true">
+                    {project.emoji}
+                  </span>
+                )
+              )}
+              {project.title}
+            </h3>
+            {project.status && (
+              <span class:list={['status', project.status]}>
+                <span class="status-dot" />
+                {statusLabel[project.status]}
+              </span>
+            )}
+          </div>
+          <p>{project.description}</p>
+          <ul class="tags">
+            {project.tech.map((tech) => (
+              <li class="tag">{tech}</li>
+            ))}
+          </ul>
+          {(project.links.code || project.links.live) && (
+            <div class="card-links">
+              {project.links.live && (
+                <a class="arrow-link" {...linkAttrs(project.links.live)}>
+                  Live site
+                </a>
+              )}
+              {project.links.code && (
+                <a class="arrow-link" {...linkAttrs(project.links.code)}>
+                  GitHub
+                </a>
+              )}
+            </div>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</Section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s,
+      transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: color-mix(in srgb, var(--ink) 30%, var(--line));
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  h3 :global(.project-icon) {
+    flex: none;
+    width: 28px;
+    height: auto;
+  }
+
+  .project-emoji {
+    flex: none;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .status {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2f9e44;
+  }
+
+  .in-progress .status-dot {
+    background: #e8a317;
+    animation: blink 1.6s ease-in-out infinite;
+  }
+
+  p {
+    margin: 0;
+    font-size: 15px;
+    color: var(--ink-2);
+  }
+
+  .tags {
+    margin-top: auto;
+  }
+
+  .card-links {
+    display: flex;
+    gap: 18px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .in-progress .status-dot {
+      animation: none;
+    }
+  }
+</style>

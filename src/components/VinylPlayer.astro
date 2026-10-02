@@ -1,0 +1,700 @@
+---
+import { Image } from 'astro:assets';
+import avatar from '../assets/avatar.jpg';
+import Section from './Section.astro';
+import { playlists, spotifyRef } from '../data/playlists';
+import { site } from '../data/site';
+import { linkAttrs } from '../utils/links';
+
+const records = playlists.map((playlist) => ({ ...playlist, ...spotifyRef(playlist.url) }));
+const first = records[0];
+---
+
+<Section id="music" tone="indigo" num="05" title="On the turntable" intro="Pick a record from the crate. These are the playlists I keep coming back to.">
+  <div class="vinyl" data-vinyl data-state="idle" style={`--label: ${first.color}`}>
+    <div class="turntable reveal">
+      <span class="led" aria-hidden="true"></span>
+      <div class="mat" aria-hidden="true"></div>
+      <div class="platter" aria-hidden="true">
+        <div class="record">
+          <div class="label">
+            <span class="label-name" data-label-name>{first.name}</span>
+            <span class="label-sub">33⅓ RPM</span>
+          </div>
+        </div>
+        <div class="sheen"></div>
+      </div>
+      <div class="tonearm" aria-hidden="true">
+        <span class="weight"></span>
+        <span class="arm"></span>
+        <span class="head"></span>
+        <span class="base"></span>
+      </div>
+      <span class="rpm" aria-hidden="true">33⅓</span>
+      <button class="play" type="button" data-play aria-label="Play" aria-pressed="false">
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"></path></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"></path></svg>
+      </button>
+    </div>
+
+    <div class="crate reveal">
+      <h3 class="sub">The crate</h3>
+      <ul>
+        {
+          records.map((record, i) => (
+            <li>
+              <button
+                class="sleeve"
+                type="button"
+                aria-pressed={i === 0 ? 'true' : 'false'}
+                style={`--c: ${record.color}`}
+                data-uri={record.uri}
+                data-embed={record.embed}
+                data-name={record.name}
+                data-color={record.color}
+              >
+                <span class="sleeve-art" aria-hidden="true">
+                  <span class="sleeve-disc" />
+                </span>
+                <span class="sleeve-text">
+                  <span class="sleeve-name">{record.name}</span>
+                  <span class="sleeve-mood">{record.mood}</span>
+                </span>
+                <span class="eq" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+      {
+        site.links.spotify && (
+          <a class="follow" {...linkAttrs(site.links.spotify)}>
+            <Image class="follow-avatar" src={avatar} alt="" width={44} height={44} densities={[1, 2]} />
+            <span class="follow-text">
+              <span class="follow-label">Follow me on Spotify</span>
+              <span class="follow-name">{site.fullName}</span>
+            </span>
+            <svg class="follow-logo" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+            </svg>
+          </a>
+        )
+      }
+    </div>
+
+    <div class="embed reveal">
+      <div data-embed-target></div>
+    </div>
+  </div>
+</Section>
+
+<style>
+  .vinyl {
+    display: grid;
+    grid-template-columns: minmax(0, 360px) minmax(240px, 1fr);
+    gap: 28px 36px;
+    align-items: start;
+  }
+
+  /* ---------- Turntable (sized in cqw so it scales as one piece) ---------- */
+  .turntable {
+    container-type: inline-size;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1.15;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .led {
+    position: absolute;
+    top: 5cqw;
+    left: 5cqw;
+    width: 1.8cqw;
+    height: 1.8cqw;
+    border-radius: 50%;
+    background: var(--line);
+    transition:
+      background-color 0.3s,
+      box-shadow 0.3s;
+  }
+
+  .vinyl[data-state='playing'] .led {
+    background: var(--accent);
+    box-shadow: 0 0 1.6cqw var(--accent);
+  }
+
+  .mat {
+    position: absolute;
+    top: calc(50% - 37.5cqw);
+    left: 3.5cqw;
+    width: 75cqw;
+    height: 75cqw;
+    border-radius: 50%;
+    background: var(--platter);
+  }
+
+  .platter {
+    position: absolute;
+    top: calc(50% - 36cqw);
+    left: 5cqw;
+    width: 72cqw;
+    height: 72cqw;
+  }
+
+  .platter.swap {
+    animation: swap 0.55s ease;
+  }
+
+  .record {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle, #141414 0 0.45cqw, #1e1e1e 0.45cqw 0.9cqw);
+    box-shadow:
+      0 0.6cqw 1.8cqw rgb(0 0 0 / 0.35),
+      inset 0 0 0 0.6cqw #0c0c0c;
+    animation: spin 1.8s linear infinite; /* 33⅓ rpm */
+    animation-play-state: paused;
+  }
+
+  .vinyl[data-state='playing'] .record {
+    animation-play-state: running;
+  }
+
+  /* Light glints stay put while the record turns under them. */
+  .sheen {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 25deg,
+      transparent 0deg,
+      rgb(255 255 255 / 0.13) 28deg,
+      transparent 60deg 180deg,
+      rgb(255 255 255 / 0.09) 208deg,
+      transparent 240deg
+    );
+    pointer-events: none;
+  }
+
+  .label {
+    position: absolute;
+    inset: 31%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2.6cqw 1.6cqw 2.2cqw;
+    border-radius: 50%;
+    background: var(--label);
+    color: #fff;
+    text-align: center;
+    transition: background-color 0.3s;
+  }
+
+  .label::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2cqw;
+    height: 2cqw;
+    margin: -1cqw;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #f4f4f4, #9a9a9a);
+  }
+
+  .label-name {
+    max-width: 19cqw;
+    font-family: var(--font-serif);
+    font-size: 2.9cqw;
+    line-height: 1.05;
+  }
+
+  .label-sub {
+    font-family: var(--font-mono);
+    font-size: 1.4cqw;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+  }
+
+  /* The tonearm pivots around a zero-size box; children hang off that point. */
+  .tonearm {
+    position: absolute;
+    top: 13cqw;
+    left: 88cqw;
+    width: 0;
+    height: 0;
+    transform: rotate(var(--arm-angle, 0deg));
+    transition: transform 0.9s cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+
+  .vinyl[data-state='playing'] .tonearm,
+  .vinyl[data-state='loading'] .tonearm {
+    --arm-angle: 24deg;
+  }
+
+  .tonearm span {
+    position: absolute;
+  }
+
+  .weight {
+    top: -11cqw;
+    left: -2.3cqw;
+    width: 4.6cqw;
+    height: 6cqw;
+    border-radius: 1cqw;
+    background: linear-gradient(90deg, #8a8a8a, #dcdcdc, #8a8a8a);
+  }
+
+  .arm {
+    top: -6cqw;
+    left: -0.7cqw;
+    width: 1.4cqw;
+    height: 56cqw;
+    border-radius: 0.7cqw;
+    background: linear-gradient(90deg, #9b9b9b, #efefef 45%, #a5a5a5);
+  }
+
+  .head {
+    top: 48cqw;
+    left: -2.1cqw;
+    width: 4.2cqw;
+    height: 8cqw;
+    border-radius: 0.8cqw;
+    background: #2a2a2a;
+    box-shadow: 0 0.4cqw 0.8cqw rgb(0 0 0 / 0.25);
+  }
+
+  .base {
+    top: -5cqw;
+    left: -5cqw;
+    width: 10cqw;
+    height: 10cqw;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #fafafa, #c9c9c9 60%, #a8a8a8);
+    box-shadow: 0 0.4cqw 1cqw rgb(0 0 0 / 0.2);
+  }
+
+  .rpm {
+    position: absolute;
+    right: 16cqw;
+    bottom: 6.6cqw;
+    font-family: var(--font-mono);
+    font-size: 2.6cqw;
+    color: var(--muted);
+  }
+
+  .play {
+    position: absolute;
+    right: 4cqw;
+    bottom: 4cqw;
+    display: grid;
+    place-items: center;
+    width: 9.5cqw;
+    height: 9.5cqw;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+
+  .play:hover {
+    transform: scale(1.06);
+  }
+
+  .play:active {
+    transform: scale(0.95);
+  }
+
+  .play svg {
+    width: 4cqw;
+    height: 4cqw;
+    fill: currentColor;
+  }
+
+  .i-pause,
+  .vinyl[data-state='playing'] .i-play {
+    display: none;
+  }
+
+  .vinyl[data-state='playing'] .i-pause {
+    display: block;
+  }
+
+  /* ---------- Crate ---------- */
+  .crate ul {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sleeve {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 10px 14px 10px 10px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .sleeve:hover {
+    border-color: var(--muted);
+  }
+
+  .sleeve[aria-pressed='true'] {
+    border-color: var(--ink);
+  }
+
+  .sleeve-art {
+    position: relative;
+    flex: none;
+    width: 48px;
+    height: 48px;
+    margin-right: 10px;
+  }
+
+  .sleeve-art::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: 4px;
+    background:
+      radial-gradient(circle at 50% 50%, transparent 0 9px, rgb(255 255 255 / 0.22) 9.5px 10.5px, transparent 11px),
+      var(--c);
+  }
+
+  .sleeve-disc {
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, var(--c) 0 6px, transparent 6.5px),
+      repeating-radial-gradient(circle, #121212 0 1px, #262626 1px 2px);
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .sleeve:hover .sleeve-disc,
+  .sleeve[aria-pressed='true'] .sleeve-disc {
+    transform: translateX(14px);
+  }
+
+  .sleeve-text {
+    display: grid;
+    min-width: 0;
+  }
+
+  .sleeve-name {
+    overflow: hidden;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sleeve-mood {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .eq {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .eq i {
+    width: 3px;
+    height: 30%;
+    border-radius: 1px;
+    background: var(--accent);
+    animation: eq 0.9s ease-in-out infinite alternate;
+    animation-play-state: paused;
+  }
+
+  .eq i:nth-child(2) {
+    animation-delay: -0.3s;
+  }
+
+  .eq i:nth-child(3) {
+    animation-delay: -0.6s;
+  }
+
+  .vinyl[data-state='playing'] .sleeve[aria-pressed='true'] .eq {
+    opacity: 1;
+  }
+
+  .vinyl[data-state='playing'] .sleeve[aria-pressed='true'] .eq i {
+    animation-play-state: running;
+  }
+
+  /* ---------- Follow on Spotify ---------- */
+  .follow {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+    padding: 6px 18px 6px 6px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    text-decoration: none;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s,
+      transform 0.2s;
+  }
+
+  .follow:hover {
+    border-color: #1db954;
+    box-shadow: 0 6px 20px rgb(29 185 84 / 0.18);
+    transform: translateY(-1px);
+  }
+
+  .follow :global(.follow-avatar) {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .follow-text {
+    display: grid;
+    line-height: 1.25;
+  }
+
+  .follow-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .follow-name {
+    font-weight: 600;
+  }
+
+  .follow-logo {
+    width: 22px;
+    height: 22px;
+    margin-left: 6px;
+    fill: #1db954;
+  }
+
+  /* ---------- Spotify embed ---------- */
+  .embed {
+    grid-column: 1 / -1;
+    min-height: 152px;
+    border-radius: 12px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .embed :global(iframe) {
+    display: block;
+    width: 100%;
+    border: 0;
+    border-radius: 12px;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes swap {
+    45% {
+      opacity: 0;
+      transform: translateX(-6cqw) scale(0.94);
+    }
+    55% {
+      opacity: 0;
+      transform: translateX(-6cqw) scale(0.94);
+    }
+  }
+
+  @keyframes eq {
+    from {
+      height: 20%;
+    }
+    to {
+      height: 100%;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .vinyl {
+      grid-template-columns: 1fr;
+    }
+
+    .turntable {
+      max-width: 440px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .record,
+    .eq i,
+    .platter.swap {
+      animation: none;
+    }
+
+    .tonearm {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  // Spotify's iFrame API lets the turntable react to real playback:
+  // the record spins only while music is actually playing in the embed.
+  type EmbedController = {
+    loadUri(uri: string): void;
+    play(): void;
+    togglePlay(): void;
+    addListener(event: string, callback: (event: any) => void): void;
+  };
+
+  type IFrameAPI = {
+    createController(
+      element: HTMLElement,
+      options: { uri: string; width: string; height: number },
+      callback: (controller: EmbedController) => void,
+    ): void;
+  };
+
+  const root = document.querySelector<HTMLElement>('[data-vinyl]');
+  if (root) initTurntable(root);
+
+  function initTurntable(root: HTMLElement) {
+    const sleeves = [...root.querySelectorAll<HTMLButtonElement>('.sleeve')];
+    const platter = root.querySelector<HTMLElement>('.platter')!;
+    const labelName = root.querySelector<HTMLElement>('[data-label-name]')!;
+    const playButton = root.querySelector<HTMLButtonElement>('[data-play]')!;
+    const target = root.querySelector<HTMLElement>('[data-embed-target]')!;
+
+    let current = sleeves.find((s) => s.getAttribute('aria-pressed') === 'true') ?? sleeves[0];
+    let controller: EmbedController | null = null;
+    let fallbackFrame: HTMLIFrameElement | null = null;
+    let playWhenReady = false;
+
+    const setState = (state: 'idle' | 'loading' | 'playing') => {
+      root.dataset.state = state;
+      const playing = state === 'playing';
+      playButton.setAttribute('aria-pressed', String(playing));
+      playButton.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    };
+
+    const choose = (sleeve: HTMLButtonElement) => {
+      if (sleeve === current) {
+        togglePlay();
+        return;
+      }
+      current = sleeve;
+      sleeves.forEach((s) => s.setAttribute('aria-pressed', String(s === sleeve)));
+
+      // Slide the old record off, swap the label mid-animation, slide the new one on.
+      platter.classList.remove('swap');
+      void platter.offsetWidth;
+      platter.classList.add('swap');
+      setTimeout(() => {
+        root.style.setProperty('--label', sleeve.dataset.color!);
+        labelName.textContent = sleeve.dataset.name!;
+      }, 250);
+
+      if (controller) {
+        setState('loading');
+        playWhenReady = true;
+        controller.loadUri(sleeve.dataset.uri!);
+      } else if (fallbackFrame) {
+        fallbackFrame.src = sleeve.dataset.embed!;
+        setState('idle');
+      }
+    };
+
+    const togglePlay = () => {
+      if (controller) {
+        if (root.dataset.state !== 'playing') setState('loading');
+        controller.togglePlay();
+      } else {
+        // Without the API we can't hear the embed, so the button just spins the record.
+        setState(root.dataset.state === 'playing' ? 'idle' : 'playing');
+      }
+    };
+
+    const useFallback = () => {
+      if (controller || fallbackFrame) return;
+      fallbackFrame = document.createElement('iframe');
+      fallbackFrame.src = current.dataset.embed!;
+      fallbackFrame.height = '152';
+      fallbackFrame.loading = 'lazy';
+      fallbackFrame.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+      fallbackFrame.title = 'Spotify playlist';
+      target.replaceWith(fallbackFrame);
+    };
+
+    const loadSpotify = () => {
+      (window as any).onSpotifyIframeApiReady = (api: IFrameAPI) => {
+        if (fallbackFrame) return; // API arrived after we already gave up on it
+        api.createController(target, { uri: current.dataset.uri!, width: '100%', height: 152 }, (c) => {
+          controller = c;
+          c.addListener('ready', () => {
+            if (!playWhenReady) return;
+            playWhenReady = false;
+            c.play();
+          });
+          c.addListener('playback_update', (e) => {
+            const { isPaused, isBuffering } = e.data;
+            if (isPaused) setState(playWhenReady ? 'loading' : 'idle');
+            else setState(isBuffering ? 'loading' : 'playing');
+          });
+        });
+      };
+      const script = document.createElement('script');
+      script.src = 'https://open.spotify.com/embed/iframe-api/v1';
+      script.async = true;
+      script.onerror = useFallback;
+      document.head.append(script);
+      setTimeout(() => controller || useFallback(), 10000);
+    };
+
+    sleeves.forEach((sleeve) => sleeve.addEventListener('click', () => choose(sleeve)));
+    playButton.addEventListener('click', togglePlay);
+
+    // Only load Spotify when the section is about to scroll into view.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        observer.disconnect();
+        loadSpotify();
+      },
+      { rootMargin: '600px 0px' },
+    );
+    observer.observe(root);
+  }
+</script>
