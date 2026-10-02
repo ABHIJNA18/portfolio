@@ -1,4 +1,5 @@
 ---
+import Analytics from '@vercel/analytics/astro';
 import '../styles/global.css';
 import { site } from '../data/site';
 
@@ -50,6 +51,8 @@ const previewImage = new URL('/og.jpg', Astro.site);
         root.dataset.theme = theme;
       })();
     </script>
+    <!-- Cookie-free visitor stats; view them in the Vercel dashboard under Analytics. -->
+    <Analytics />
   </head>
   <body>
     <slot />
