@@ -1,13 +1,14 @@
 ---
 import { linkAttrs } from '../utils/links';
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import portrait from '../assets/abhijna.jpg';
 import { site } from '../data/site';
 import { books } from '../data/books';
-import { playlists } from '../data/playlists';
+import { getPlaylists } from '../utils/spotify';
 
 const reading = books.find((book) => book.status === 'reading');
-const spinning = playlists[0];
+const [spinning] = await getPlaylists();
+const spinningArt = spinning?.art && (await getImage({ src: spinning.art, inferSize: true, width: 40, format: 'webp' })).src;
 
 const links = [
   { label: 'GitHub', href: site.links.github },
@@ -58,7 +59,9 @@ const links = [
             <a class="now-item" href="#music">
               <span class="now-emoji" aria-hidden="true">🎧</span>
               <span class="now-label">Spinning</span>
-              <span class="mini-record" style={`--c: ${spinning.color}`} />
+              <span class="mini-record" style={`--c: ${spinning.tint}`}>
+                {spinningArt && <img src={spinningArt} alt="" width="10" height="10" />}
+              </span>
               <span>{spinning.name}</span>
             </a>
           )
@@ -212,6 +215,8 @@ const links = [
   }
 
   .mini-record {
+    display: grid;
+    place-items: center;
     width: 18px;
     height: 18px;
     border-radius: 50%;
@@ -219,6 +224,13 @@ const links = [
       radial-gradient(circle, #eee 0 1.5px, var(--c) 2px 5px, transparent 5.5px),
       repeating-radial-gradient(circle, #151515 0 1px, #2a2a2a 1px 2px);
     animation: spin 3s linear infinite;
+  }
+
+  .mini-record img {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    object-fit: cover;
   }
 
   @keyframes spin {

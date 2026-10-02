@@ -118,7 +118,7 @@ a {
   letter-spacing: -0.01em;
 }
 
-/* Soft gradient headings — each section picks a tone. The small bottom padding
+/* Soft gradient headings: each section picks a tone. The small bottom padding
    keeps descenders (p, y, g) inside the painted area. */
 .gradient-text,
 [class*='tone-'] .section-title {
@@ -280,7 +280,7 @@ a {
   text-decoration-color: currentColor;
 }
 
-/* Scroll reveal — only hides content once JS is confirmed running. */
+/* Scroll reveal: only hides content once JS is confirmed running. */
 html.js .reveal {
   opacity: 0;
   transform: translateY(14px);

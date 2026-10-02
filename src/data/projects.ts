@@ -28,7 +28,7 @@ export const projects: Project[] = [
     title: 'Tech Docs Research Assistant',
     emoji: '📄',
     description:
-      'An evidence-grounded RAG assistant for technical documentation — hybrid search (semantic + BM25), cross-encoder reranking, and enforced citations, with a Ragas evaluation pipeline in CI to catch regressions.',
+      'An evidence-grounded RAG assistant for technical documentation. It combines hybrid search (semantic + BM25), cross-encoder reranking, and enforced citations, with a Ragas evaluation pipeline in CI to catch regressions.',
     tech: ['Python', 'LangChain', 'ChromaDB', 'BM25', 'Ragas', 'OpenAI API'],
     status: 'in-progress',
     links: { code: '', live: '' },

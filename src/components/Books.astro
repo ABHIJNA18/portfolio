@@ -1,16 +1,17 @@
 ---
 import Section from './Section.astro';
 import BookCover from './BookCover.astro';
+import ShelfBook from './ShelfBook.astro';
 import { books } from '../data/books';
 
 const reading = books.filter((book) => book.status === 'reading');
 const shelves = [
-  { label: "Books I've loved", books: books.filter((book) => book.status === 'loved') },
-  { label: 'Up next', books: books.filter((book) => book.status === 'up-next') },
+  { label: 'Favorites', tag: 'Favorite', books: books.filter((book) => book.status === 'loved') },
+  { label: 'Up next', tag: 'Up next', books: books.filter((book) => book.status === 'up-next') },
 ].filter((shelf) => shelf.books.length > 0);
 ---
 
-<Section id="books" tone="sunset" num="04" title="Bookshelf" intro="What I'm reading now, what I've loved, and what's next on the pile. Hover over a book — or tap it — to flip through the pages.">
+<Section id="books" tone="sunset" num="04" title="Bookshelf" intro="What I'm reading now, what I've loved, and what's next on the pile.">
   {
     reading.length > 0 && (
       <div class="group">
@@ -48,24 +49,37 @@ const shelves = [
     )
   }
 
-  <div class="shelves">
-    {
-      shelves.map((shelf) => (
-        <div class="group reveal">
-          <h3 class="sub">{shelf.label}</h3>
-          <ul class="covers">
-            {shelf.books.map((book) => (
-              <li>
-                <BookCover book={book} sizes="(max-width: 640px) 45vw, 160px" />
-                <p class="title">{book.title}</p>
-                <p class="author">{book.author}</p>
-              </li>
-            ))}
-          </ul>
+  {
+    shelves.length > 0 && (
+      <div class="shelf reveal" data-shelf>
+        <div class="shelf-row">
+          {shelves.map((shelf, i) => (
+            <>
+              {i > 0 && <span class="bookend" aria-hidden="true" />}
+              <div class="shelf-group">
+                <h3 class="sub">{shelf.label}</h3>
+                <div class="shelf-books">
+                  {shelf.books.map((book) => (
+                    <ShelfBook book={book} shelf={shelf.tag} />
+                  ))}
+                </div>
+              </div>
+            </>
+          ))}
+          <svg class="plant" viewBox="0 0 80 120" aria-hidden="true">
+            <path d="M40 78C38 58 26 44 10 40c10 12 18 24 22 38z" fill="#6f9a72" />
+            <path d="M40 78c2-22 14-38 32-44-10 14-20 28-24 44z" fill="#4f7d5a" />
+            <path d="M40 78c-1-26 4-50 14-66 0 22-4 44-10 66z" fill="#5f8b6e" />
+            <path d="M40 78c-4-18-12-30-26-36 8 12 14 22 18 36z" fill="#3f6f52" />
+            <path d="M18 76h44l-5 42H23z" fill="#c96f4a" />
+            <path d="M16 72h48v8H16z" rx="2" fill="#b35f3d" />
+          </svg>
         </div>
-      ))
-    }
-  </div>
+        <div class="plank" aria-hidden="true" />
+        <p class="shelf-caption" aria-live="polite" data-shelf-caption />
+      </div>
+    )
+  }
 </Section>
 
 <style>
@@ -132,32 +146,127 @@ const shelves = [
     color: var(--ink-2);
   }
 
-  .shelves {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 48px;
-    margin-top: 56px;
+
+  /* ---------- The shelf ---------- */
+  .shelf {
+    --plank: #cdbb9e;
+    --plank-top: #ddd0b8;
+    margin-top: 64px;
   }
 
-  .covers {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  :global([data-theme='dark']) .shelf {
+    --plank: #3b342b;
+    --plank-top: #4a4237;
   }
 
-  .title {
-    margin: 14px 0 0;
-    font-family: var(--font-serif);
-    font-size: 19px;
-    line-height: 1.15;
+  .shelf-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 28px;
+    min-height: 250px;
+    padding: 0 14px;
   }
 
-  @media (max-width: 640px) {
-    .shelves {
-      grid-template-columns: 1fr;
+  .shelf-group .sub {
+    margin-bottom: 14px;
+  }
+
+  .shelf-books {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+  }
+
+  .bookend {
+    flex: none;
+    width: 8px;
+    height: 120px;
+    border-radius: 4px 4px 0 0;
+    background: color-mix(in srgb, var(--ink) 55%, var(--bg));
+  }
+
+  .plant {
+    flex: none;
+    width: 70px;
+    margin-left: auto;
+  }
+
+  .plank {
+    height: 12px;
+    border-radius: 3px;
+    background: linear-gradient(var(--plank-top), var(--plank));
+    box-shadow: 0 12px 18px -12px rgb(0 0 0 / 0.45);
+  }
+
+  .shelf-caption {
+    min-height: 1.6em;
+    margin: 18px 0 0;
+    font-size: 15px;
+  }
+
+  .shelf-caption :global(.muted) {
+    color: var(--muted);
+  }
+
+  .shelf-caption :global(.tag) {
+    margin-left: 10px;
+  }
+
+  @media (max-width: 560px) {
+    .shelf {
+      --book-scale: 0.82;
+    }
+
+    .shelf-row {
+      gap: 18px;
+      min-height: 215px;
+      padding: 0 6px;
+    }
+
+    .plant {
+      display: none;
     }
   }
 </style>
+
+<script>
+  // One book off the shelf at a time. The caption names whichever book is out.
+  const shelf = document.querySelector<HTMLElement>('[data-shelf]');
+  const caption = shelf?.querySelector<HTMLElement>('[data-shelf-caption]');
+
+  if (shelf && caption) {
+    const books = [...shelf.querySelectorAll<HTMLButtonElement>('.shelf-book')];
+
+    const describe = (book: HTMLButtonElement | null) => {
+      caption.replaceChildren();
+      if (!book) return;
+      const { title, author, shelf: tag } = book.dataset;
+      const titleEl = document.createElement('strong');
+      titleEl.textContent = title ?? '';
+      const authorEl = document.createElement('span');
+      authorEl.className = 'muted';
+      authorEl.textContent = ` by ${author}`;
+      const tagEl = document.createElement('span');
+      tagEl.className = 'tag';
+      tagEl.textContent = tag ?? '';
+      caption.append(titleEl, authorEl, tagEl);
+    };
+
+    const open = (target: HTMLButtonElement | null) => {
+      for (const book of books) {
+        const isTarget = book === target;
+        book.classList.toggle('is-open', isTarget);
+        book.setAttribute('aria-expanded', String(isTarget));
+      }
+      describe(target);
+    };
+
+    for (const book of books) {
+      book.addEventListener('click', () => open(book.classList.contains('is-open') ? null : book));
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') open(null);
+    });
+  }
+</script>

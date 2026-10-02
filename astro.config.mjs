@@ -3,8 +3,10 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
+  // The live address, used for link previews (LinkedIn, Slack, WhatsApp...).
+  site: 'https://portfolio-abhijna-kanthila.vercel.app',
   image: {
-    // Book covers are linked from the web (e.g. Open Library); Astro downloads and
+    // Book covers and playlist art are linked from the web; Astro downloads and
     // optimizes them at build time so the live site serves its own copies.
     remotePatterns: [{ protocol: 'https' }],
   },

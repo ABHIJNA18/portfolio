@@ -8,7 +8,7 @@ export const site = {
   location: 'Augsburg, Germany',
   headline: 'I love working at the intersection of backend engineering and AI.',
   bio: [
-    "I'm a software engineer who builds AI agents and the systems around them — multi-agent orchestration, MCP integrations, retrieval, and evaluation. I spent four years at Infoblox, most recently building agent platforms that took real debugging and support work off engineers' plates.",
+    "I'm a software engineer who builds AI agents and the systems around them: multi-agent orchestration, MCP integrations, retrieval, and evaluation. I spent four years at Infoblox, most recently building agent platforms that took real debugging and support work off engineers' plates.",
     "I'm based in Augsburg, Germany. When I'm not coding, I'm usually halfway through a book, putting together a new playlist, or hiking the Bavarian Alps.",
   ],
   email: 'aabhijnak@gmail.com',

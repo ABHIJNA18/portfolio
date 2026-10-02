@@ -1,0 +1,225 @@
+---
+import { Image } from 'astro:assets';
+import { bookColor, type Book } from '../data/books';
+import { inkFor, spineColor } from '../utils/colors';
+
+interface Props {
+  book: Book;
+  /** Shown in the caption when the book is pulled out, e.g. "Favorite". */
+  shelf: string;
+}
+
+const { book, shelf } = Astro.props;
+
+// Spine color comes from the real cover, like an actual book.
+const spine = (book.cover && (await spineColor(book.cover))) || bookColor(book);
+const ink = inkFor(spine);
+const surname = book.author.split(/\s+/).at(-1);
+
+// Size varies a little per book (but never between builds) so the shelf looks hand-arranged.
+let seed = 0;
+for (const ch of book.title + book.author) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+const height = 196 + (seed % 4) * 8;
+const depth = 34 + ((seed >> 3) % 4) * 4;
+---
+
+<!--
+  A 3D book standing on the shelf with its spine facing out. Clicking it widens its
+  slot and turns the book to face you, showing the cover.
+  Faces: front cover at +depth/2, back at -depth/2, spine on the left, pages on the right.
+-->
+<button
+  class="shelf-book"
+  type="button"
+  aria-expanded="false"
+  aria-label={`${book.title} by ${book.author}`}
+  data-title={book.title}
+  data-author={book.author}
+  data-shelf={shelf}
+  style={`--h0: ${height}px; --d0: ${depth}px; --spine: ${spine}; --ink: ${ink}`}
+>
+  <span class="box">
+    <span class="back"></span>
+    <span class="edge"></span>
+    <span class="front">
+      {
+        book.cover ? (
+          <Image src={book.cover} alt="" inferSize widths={[150, 300]} sizes="150px" loading="lazy" />
+        ) : (
+          <span class="drawn">{book.title}</span>
+        )
+      }
+    </span>
+    <span class="spine">
+      <span class="spine-title">{book.title}</span>
+      <span class="spine-author">{surname}</span>
+    </span>
+  </span>
+</button>
+
+<style>
+  .shelf-book {
+    --h: calc(var(--h0) * var(--book-scale, 1));
+    --d: calc(var(--d0) * var(--book-scale, 1));
+    --w: calc(var(--h) * 0.66);
+    position: relative;
+    flex: none;
+    width: var(--d);
+    height: var(--h);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    perspective: 800px;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
+      translate 0.25s ease;
+  }
+
+  .shelf-book:not(.is-open):hover {
+    translate: 0 -8px;
+  }
+
+  .shelf-book:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  .box {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: var(--w);
+    height: var(--h);
+    transform-style: preserve-3d;
+    transform-origin: 0 50%;
+    /* On the shelf: turned 90° so only the spine faces out. */
+    transform: translateX(calc(var(--d) / 2)) rotateY(90deg) rotateX(0deg);
+    transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .box > span {
+    position: absolute;
+    display: block;
+  }
+
+  .front {
+    top: 0;
+    left: 0;
+    width: var(--w);
+    height: var(--h);
+    overflow: hidden;
+    border-radius: 2px 5px 5px 2px;
+    background: var(--spine);
+    box-shadow: var(--shadow);
+    translate: 0 0 calc(var(--d) / 2);
+  }
+
+  .front::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgb(0 0 0 / 0.22) 0 3%, rgb(255 255 255 / 0.14) 3% 4.2%, transparent 4.2%);
+    pointer-events: none;
+  }
+
+  .front :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .drawn {
+    display: block;
+    padding: 16px 12px;
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 18px;
+    line-height: 1.1;
+    text-align: left;
+  }
+
+  .back {
+    top: 0;
+    left: 0;
+    width: var(--w);
+    height: var(--h);
+    border-radius: 2px 5px 5px 2px;
+    background: color-mix(in srgb, var(--spine) 70%, #000);
+    translate: 0 0 calc(var(--d) / -2);
+  }
+
+  .spine {
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: var(--d);
+    height: var(--h);
+    padding: 14px 0 12px;
+    border-radius: 3px;
+    background:
+      linear-gradient(90deg, rgb(0 0 0 / 0.18), rgb(255 255 255 / 0.12) 30%, rgb(0 0 0 / 0.05) 70%, rgb(0 0 0 / 0.2)),
+      var(--spine);
+    color: var(--ink);
+    box-shadow:
+      inset 0 9px 0 -7px color-mix(in srgb, var(--ink) 35%, transparent),
+      inset 0 -9px 0 -7px color-mix(in srgb, var(--ink) 35%, transparent);
+    transform: translateX(calc(var(--d) / -2)) rotateY(-90deg);
+  }
+
+  .spine-title {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    font-family: var(--font-serif);
+    font-size: 15px;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+  }
+
+  .spine-author {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    writing-mode: vertical-rl;
+  }
+
+  /* Page block on the right side of the book. */
+  .edge {
+    top: 3px;
+    bottom: 3px;
+    left: 0;
+    width: var(--d);
+    background: repeating-linear-gradient(90deg, #f6f1e6 0 1px, #dcd5c4 1px 2px);
+    transform: translateX(calc(var(--w) - var(--d) / 2)) rotateY(90deg);
+  }
+
+  /* ---------- Pulled out: widen the slot and turn to face the cover ---------- */
+  .shelf-book.is-open {
+    z-index: 2;
+    width: var(--w);
+  }
+
+  .is-open .box {
+    transform: translateX(0) rotateY(0deg) rotateX(0deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shelf-book,
+    .box {
+      transition-duration: 0.01s;
+    }
+  }
+</style>

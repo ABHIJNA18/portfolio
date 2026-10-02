@@ -1,8 +1,8 @@
 // Your bookshelf. status: 'reading' | 'loved' | 'up-next'.
-// cover: an image URL. Easiest source is openlibrary.org — find the book,
+// cover: an image URL. Easiest source is openlibrary.org: find the book,
 //   right-click the cover → "Copy image address". Leave it out and the site
 //   draws a simple colored cover instead.
-// progress (0–100) is optional and shows a bar for books you're reading.
+// progress (0-100) is optional and shows a bar for books you're reading.
 // color is the placeholder shown while the cover loads (or the drawn cover's color).
 
 export type Book = {

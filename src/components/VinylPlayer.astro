@@ -1,23 +1,30 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import avatar from '../assets/avatar.jpg';
 import Section from './Section.astro';
-import { playlists, spotifyRef } from '../data/playlists';
 import { site } from '../data/site';
 import { linkAttrs } from '../utils/links';
+import { getPlaylists } from '../utils/spotify';
 
-const records = playlists.map((playlist) => ({ ...playlist, ...spotifyRef(playlist.url) }));
+// Each record carries its Spotify cover, pre-sized for the label on the turntable.
+const records = await Promise.all(
+  (await getPlaylists()).map(async (playlist) => ({
+    ...playlist,
+    labelArt: playlist.art ? (await getImage({ src: playlist.art, inferSize: true, width: 320, format: 'webp' })).src : '',
+  })),
+);
 const first = records[0];
 ---
 
 <Section id="music" tone="indigo" num="05" title="On the turntable" intro="Pick a record from the crate. These are the playlists I keep coming back to.">
-  <div class="vinyl" data-vinyl data-state="idle" style={`--label: ${first.color}`}>
+  <div class="vinyl" data-vinyl data-state="idle" style={`--label: ${first.tint}`}>
     <div class="turntable reveal">
       <span class="led" aria-hidden="true"></span>
       <div class="mat" aria-hidden="true"></div>
       <div class="platter" aria-hidden="true">
         <div class="record">
-          <div class="label">
+          <div class:list={['label', first.labelArt && 'has-art']} data-label>
+            <img class="label-art" src={first.labelArt || undefined} alt="" data-label-art />
             <span class="label-name" data-label-name>{first.name}</span>
             <span class="label-sub">33⅓ RPM</span>
           </div>
@@ -47,14 +54,16 @@ const first = records[0];
                 class="sleeve"
                 type="button"
                 aria-pressed={i === 0 ? 'true' : 'false'}
-                style={`--c: ${record.color}`}
+                style={`--c: ${record.tint}`}
                 data-uri={record.uri}
                 data-embed={record.embed}
                 data-name={record.name}
-                data-color={record.color}
+                data-color={record.tint}
+                data-art={record.labelArt}
               >
                 <span class="sleeve-art" aria-hidden="true">
                   <span class="sleeve-disc" />
+                  {record.art && <Image class="sleeve-cover" src={record.art} alt="" inferSize widths={[48, 96]} sizes="48px" />}
                 </span>
                 <span class="sleeve-text">
                   <span class="sleeve-name">{record.name}</span>
@@ -93,11 +102,29 @@ const first = records[0];
 </Section>
 
 <style>
+  /* Registered so the panel tint can fade smoothly between records. */
+  @property --label {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #888888;
+  }
+
+  /* Like a Spotify playlist page: the panel takes its color from the current cover. */
   .vinyl {
     display: grid;
     grid-template-columns: minmax(0, 360px) minmax(240px, 1fr);
     gap: 28px 36px;
     align-items: start;
+    padding: 28px;
+    border: 1px solid color-mix(in srgb, var(--label) 24%, var(--line));
+    border-radius: 22px;
+    background: linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--label) 34%, var(--surface)),
+      color-mix(in srgb, var(--label) 8%, var(--surface)) 60%,
+      var(--surface)
+    );
+    transition: --label 0.8s ease;
   }
 
   /* ---------- Turntable (sized in cqw so it scales as one piece) ---------- */
@@ -197,6 +224,21 @@ const first = records[0];
     color: #fff;
     text-align: center;
     transition: background-color 0.3s;
+  }
+
+  .label-art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .label:not(.has-art) .label-art,
+  .label.has-art .label-name,
+  .label.has-art .label-sub {
+    display: none;
   }
 
   .label::after {
@@ -384,6 +426,16 @@ const first = records[0];
       var(--c);
   }
 
+  .sleeve-art :global(.sleeve-cover) {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    object-fit: cover;
+  }
+
   .sleeve-disc {
     position: absolute;
     inset: 3px;
@@ -405,10 +457,8 @@ const first = records[0];
   }
 
   .sleeve-name {
-    overflow: hidden;
     font-weight: 500;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.3;
   }
 
   .sleeve-mood {
@@ -550,6 +600,7 @@ const first = records[0];
   @media (max-width: 700px) {
     .vinyl {
       grid-template-columns: 1fr;
+      padding: 16px;
     }
 
     .turntable {
@@ -594,6 +645,8 @@ const first = records[0];
   function initTurntable(root: HTMLElement) {
     const sleeves = [...root.querySelectorAll<HTMLButtonElement>('.sleeve')];
     const platter = root.querySelector<HTMLElement>('.platter')!;
+    const label = root.querySelector<HTMLElement>('[data-label]')!;
+    const labelArt = root.querySelector<HTMLImageElement>('[data-label-art]')!;
     const labelName = root.querySelector<HTMLElement>('[data-label-name]')!;
     const playButton = root.querySelector<HTMLButtonElement>('[data-play]')!;
     const target = root.querySelector<HTMLElement>('[data-embed-target]')!;
@@ -625,6 +678,10 @@ const first = records[0];
       setTimeout(() => {
         root.style.setProperty('--label', sleeve.dataset.color!);
         labelName.textContent = sleeve.dataset.name!;
+        const art = sleeve.dataset.art;
+        label.classList.toggle('has-art', Boolean(art));
+        if (art) labelArt.src = art;
+        else labelArt.removeAttribute('src');
       }, 250);
 
       if (controller) {
