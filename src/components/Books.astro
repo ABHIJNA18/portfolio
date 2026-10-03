@@ -6,8 +6,8 @@ import { books } from '../data/books';
 
 const reading = books.filter((book) => book.status === 'reading');
 const shelves = [
-  { label: 'Favorites', tag: 'Favorite', books: books.filter((book) => book.status === 'loved') },
-  { label: 'Up next', tag: 'Up next', books: books.filter((book) => book.status === 'up-next') },
+  { label: 'Favorites', books: books.filter((book) => book.status === 'loved') },
+  { label: 'Up next', books: books.filter((book) => book.status === 'up-next') },
 ].filter((shelf) => shelf.books.length > 0);
 ---
 
@@ -60,7 +60,7 @@ const shelves = [
                 <h3 class="sub">{shelf.label}</h3>
                 <div class="shelf-books">
                   {shelf.books.map((book) => (
-                    <ShelfBook book={book} shelf={shelf.tag} />
+                    <ShelfBook book={book} />
                   ))}
                 </div>
               </div>
@@ -76,7 +76,6 @@ const shelves = [
           </svg>
         </div>
         <div class="plank" aria-hidden="true" />
-        <p class="shelf-caption" aria-live="polite" data-shelf-caption />
       </div>
     )
   }
@@ -198,19 +197,6 @@ const shelves = [
     box-shadow: 0 12px 18px -12px rgb(0 0 0 / 0.45);
   }
 
-  .shelf-caption {
-    min-height: 1.6em;
-    margin: 18px 0 0;
-    font-size: 15px;
-  }
-
-  .shelf-caption :global(.muted) {
-    color: var(--muted);
-  }
-
-  .shelf-caption :global(.tag) {
-    margin-left: 10px;
-  }
 
   @media (max-width: 560px) {
     .shelf {
@@ -230,43 +216,22 @@ const shelves = [
 </style>
 
 <script>
-  // One book off the shelf at a time. The caption names whichever book is out.
-  const shelf = document.querySelector<HTMLElement>('[data-shelf]');
-  const caption = shelf?.querySelector<HTMLElement>('[data-shelf-caption]');
+  // One book off the shelf at a time; Esc puts it back.
+  const books = [...document.querySelectorAll<HTMLButtonElement>('[data-shelf] .shelf-book')];
 
-  if (shelf && caption) {
-    const books = [...shelf.querySelectorAll<HTMLButtonElement>('.shelf-book')];
-
-    const describe = (book: HTMLButtonElement | null) => {
-      caption.replaceChildren();
-      if (!book) return;
-      const { title, author, shelf: tag } = book.dataset;
-      const titleEl = document.createElement('strong');
-      titleEl.textContent = title ?? '';
-      const authorEl = document.createElement('span');
-      authorEl.className = 'muted';
-      authorEl.textContent = ` by ${author}`;
-      const tagEl = document.createElement('span');
-      tagEl.className = 'tag';
-      tagEl.textContent = tag ?? '';
-      caption.append(titleEl, authorEl, tagEl);
-    };
-
-    const open = (target: HTMLButtonElement | null) => {
-      for (const book of books) {
-        const isTarget = book === target;
-        book.classList.toggle('is-open', isTarget);
-        book.setAttribute('aria-expanded', String(isTarget));
-      }
-      describe(target);
-    };
-
+  const open = (target: HTMLButtonElement | null) => {
     for (const book of books) {
-      book.addEventListener('click', () => open(book.classList.contains('is-open') ? null : book));
+      const isTarget = book === target;
+      book.classList.toggle('is-open', isTarget);
+      book.setAttribute('aria-expanded', String(isTarget));
     }
+  };
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') open(null);
-    });
+  for (const book of books) {
+    book.addEventListener('click', () => open(book.classList.contains('is-open') ? null : book));
   }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') open(null);
+  });
 </script>

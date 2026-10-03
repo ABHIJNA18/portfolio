@@ -5,11 +5,9 @@ import { inkFor, spineColor } from '../utils/colors';
 
 interface Props {
   book: Book;
-  /** Shown in the caption when the book is pulled out, e.g. "Favorite". */
-  shelf: string;
 }
 
-const { book, shelf } = Astro.props;
+const { book } = Astro.props;
 
 // Spine color comes from the real cover, like an actual book.
 const spine = (book.cover && (await spineColor(book.cover))) || bookColor(book);
@@ -33,9 +31,6 @@ const depth = 34 + ((seed >> 3) % 4) * 4;
   type="button"
   aria-expanded="false"
   aria-label={`${book.title} by ${book.author}`}
-  data-title={book.title}
-  data-author={book.author}
-  data-shelf={shelf}
   style={`--h0: ${height}px; --d0: ${depth}px; --spine: ${spine}; --ink: ${ink}`}
 >
   <span class="box">
@@ -114,8 +109,8 @@ const depth = 34 + ((seed >> 3) % 4) * 4;
     overflow: hidden;
     border-radius: 2px 5px 5px 2px;
     background: var(--spine);
-    box-shadow: var(--shadow);
     translate: 0 0 calc(var(--d) / 2);
+    transition: box-shadow 0.4s;
   }
 
   .front::after {
@@ -214,6 +209,11 @@ const depth = 34 + ((seed >> 3) % 4) * 4;
 
   .is-open .box {
     transform: translateX(0) rotateY(0deg) rotateX(0deg);
+  }
+
+  /* Shadow only once the cover faces out; on the shelf it would leak below the spine. */
+  .is-open .front {
+    box-shadow: var(--shadow);
   }
 
   @media (prefers-reduced-motion: reduce) {
