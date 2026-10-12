@@ -1,9 +1,12 @@
 // Things you've built. Leave a link as '' to hide it.
-// Next to the title you can show a logo (image URL) or, if there's no logo, an emoji.
+// Next to the title you can show a logo (image URL or imported image) or, if there's no logo, an emoji.
+
+import type { ImageMetadata } from 'astro';
+import striveAILogo from '../assets/striveAI.webp';
 
 export type Project = {
   title: string;
-  logo?: string;
+  logo?: string | ImageMetadata;
   emoji?: string;
   description: string;
   tech: string[];
@@ -14,13 +17,11 @@ export type Project = {
 export const projects: Project[] = [
   {
     title: 'StriveAI',
-    logo: 'https://go-service-production-eace.up.railway.app/striveAI.png',
+    logo: striveAILogo,
     description:
       'An AI running coach, built and deployed end to end. A Go backend ingests Strava activity and training-load data in real time via webhooks; a Python AI service turns it into coaching insights over gRPC.',
     tech: ['Go', 'Python', 'gRPC', 'PostgreSQL', 'OpenAI API', 'Docker', 'Railway'],
-    status: 'live',
     links: {
-      live: 'https://go-service-production-eace.up.railway.app',
       code: 'https://github.com/ABHIJNA18/strava-ai-coach',
     },
   },

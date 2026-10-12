@@ -15,7 +15,7 @@ const statusLabel = { live: 'Live', 'in-progress': 'Working on it' };
           <div class="card-top">
             <h3>
               {project.logo ? (
-                <Image class="project-icon" src={project.logo} alt="" inferSize widths={[28, 56, 84]} sizes="28px" />
+                <Image class="project-icon" src={project.logo} alt="" inferSize={typeof project.logo === 'string'} widths={[28, 56, 84]} sizes="28px" />
               ) : (
                 project.emoji && (
                   <span class="project-emoji" aria-hidden="true">
